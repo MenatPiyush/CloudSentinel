@@ -1,1 +1,16 @@
-CloudSentinel – Event-Driven Self-Healing AWS Platform
+# CloudSentinel V0 — Event-Driven Self-Healing AWS Platform
+
+This project deploys a production-ish AWS stack that:
+- Runs a FastAPI service on EKS behind an internet-facing ALB
+- Scales pods with HPA
+- Scales nodes with Cluster Autoscaler
+- Detects sustained high CPU on the node group ASG with a CloudWatch Alarm
+- Triggers EventBridge -> Lambda auto-remediation (scales ASG desired capacity)
+- Logs remediation actions to DynamoDB and notifies via SNS email
+
+## Architecture (V0)
+Users -> ALB (Ingress) -> EKS Service -> Pods
+HPA scales pods, Cluster Autoscaler scales nodes
+CloudWatch Alarm (ASG CPU) -> EventBridge -> Lambda
+Lambda -> ASG scale + DynamoDB audit + SNS notification
+RDS Postgres is provisioned (optional to wire into the app)
