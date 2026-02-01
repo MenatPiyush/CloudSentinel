@@ -1,1 +1,3 @@
-// Bootstrap main configuration
+provider "aws" {
+  region = var.region
+}

@@ -22,7 +22,7 @@ override.tf.json
 # Variable files (often contain secrets)
 *.tfvars
 *.tfvars.json
-
+backend.tf
 # Local plans
 *.tfplan
 
