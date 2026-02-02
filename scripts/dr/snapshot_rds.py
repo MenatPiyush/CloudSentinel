@@ -1,8 +1,12 @@
-"""RDS snapshot helper."""
+import os
+import boto3
+from datetime import datetime, timezone
 
-def main():
-    print("TODO: implement snapshot_rds")
+rds = boto3.client("rds")
+DB_ID = os.environ["DB_INSTANCE_ID"]
 
+snap_id = f"{DB_ID}-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}"
+print("Creating snapshot:", snap_id)
 
-if __name__ == "__main__":
-    main()
+resp = rds.create_db_snapshot(DBInstanceIdentifier=DB_ID, DBSnapshotIdentifier=snap_id)
+print(resp["DBSnapshot"]["DBSnapshotIdentifier"])

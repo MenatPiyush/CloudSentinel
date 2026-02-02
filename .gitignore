@@ -28,3 +28,6 @@ backend.tf
 
 # MacOS
 .DS_Store
+
+Local.md
+
