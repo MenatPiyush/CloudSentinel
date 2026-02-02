@@ -1,1 +1,29 @@
-# Governance API weighted ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: governance-api
+  namespace: governance
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+
+    # Weighted forwarding action:
+    alb.ingress.kubernetes.io/actions.governance-forward: >
+      {"type":"forward","forwardConfig":{"targetGroups":[
+        {"serviceName":"governance-api-blue","servicePort":"80","weight":90},
+        {"serviceName":"governance-api-green","servicePort":"80","weight":10}
+      ]}}
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: governance-forward
+                port:
+                  name: use-annotation

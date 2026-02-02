@@ -1,1 +1,8 @@
-# App Mesh mesh
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: Mesh
+metadata:
+  name: governance-mesh
+spec:
+  namespaceSelector:
+    matchLabels:
+      mesh: governance-mesh

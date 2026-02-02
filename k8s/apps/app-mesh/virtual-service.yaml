@@ -1,1 +1,11 @@
-# App Mesh virtual service
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: VirtualService
+metadata:
+  name: governance-api
+  namespace: governance
+spec:
+  awsName: governance-api.governance.svc.cluster.local
+  provider:
+    virtualRouter:
+      virtualRouterRef:
+        name: governance-router
