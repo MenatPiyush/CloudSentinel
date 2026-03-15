@@ -1,1 +1,14 @@
-# App Mesh controller manifests
+# App Mesh Controller is installed via Helm in Terraform.
+# See: terraform/workload-prod/modules/controllers/appmesh-controller.tf
+#
+# The Helm chart creates:
+#   - Namespace: appmesh-system
+#   - ServiceAccount (appmesh-system/appmesh-controller) with IRSA annotation
+#   - Deployment, CRDs (Mesh, VirtualNode, VirtualService, VirtualRouter)
+#
+# To verify the installation:
+#   kubectl get deployment -n appmesh-system appmesh-controller
+#   kubectl get crds | grep appmesh
+#
+# After the controller is running, apply the mesh resources:
+#   kubectl apply -f k8s/apps/app-mesh/

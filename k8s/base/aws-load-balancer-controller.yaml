@@ -1,1 +1,10 @@
-# AWS Load Balancer Controller manifests
+# AWS Load Balancer Controller is installed via Helm in Terraform.
+# See: terraform/workload-prod/modules/controllers/alb-controller.tf
+#
+# The Helm chart creates:
+#   - ServiceAccount (kube-system/aws-load-balancer-controller) with IRSA annotation
+#   - Deployment, ClusterRole, ClusterRoleBinding, ValidatingWebhookConfiguration
+#
+# To verify the installation:
+#   kubectl get deployment -n kube-system aws-load-balancer-controller
+#   kubectl get sa -n kube-system aws-load-balancer-controller -o yaml

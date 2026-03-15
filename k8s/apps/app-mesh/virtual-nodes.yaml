@@ -1,1 +1,66 @@
-# App Mesh virtual nodes
+---
+# VirtualNode – Blue
+# A VirtualNode is the App Mesh representation of a Kubernetes deployment.
+# The App Mesh controller watches these CRs and configures the Envoy sidecars
+# injected into matching pods with the correct listener and backend settings.
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: VirtualNode
+metadata:
+  name: governance-api-blue
+  namespace: governance
+spec:
+  # meshRef tells the controller which Mesh CR owns this node.
+  meshRef:
+    name: governance-mesh
+  # podSelector matches pods by label – must match the deployment pod template labels.
+  podSelector:
+    matchLabels:
+      app: governance-api
+      color: blue
+  # listeners define which port/protocol the Envoy sidecar accepts traffic on.
+  listeners:
+    - portMapping:
+        port: 8080
+        protocol: http
+      # Health check Envoy runs against the app container before marking the node ready.
+      healthCheck:
+        protocol: http
+        path: /healthz
+        healthyThreshold: 2
+        unhealthyThreshold: 3
+        timeoutMillis: 2000
+        intervalMillis: 5000
+  # serviceDiscovery tells Envoy how to find this node's pods.
+  # dns.hostname must match the Kubernetes Service DNS name.
+  serviceDiscovery:
+    dns:
+      hostname: governance-api-blue.governance.svc.cluster.local
+---
+# VirtualNode – Green
+# Same structure as blue; only the color label and hostname differ.
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: VirtualNode
+metadata:
+  name: governance-api-green
+  namespace: governance
+spec:
+  meshRef:
+    name: governance-mesh
+  podSelector:
+    matchLabels:
+      app: governance-api
+      color: green
+  listeners:
+    - portMapping:
+        port: 8080
+        protocol: http
+      healthCheck:
+        protocol: http
+        path: /healthz
+        healthyThreshold: 2
+        unhealthyThreshold: 3
+        timeoutMillis: 2000
+        intervalMillis: 5000
+  serviceDiscovery:
+    dns:
+      hostname: governance-api-green.governance.svc.cluster.local
