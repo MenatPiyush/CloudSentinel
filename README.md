@@ -1,4 +1,4 @@
-# ☁️ CloudSentinel V0 — Event-Driven Self-Healing AWS Platform
+# ☁️ CloudSentinel — Event-Driven Self-Healing AWS Platform
 
 ## 🎯 Overview
 CloudSentinel is a central cloud control system that:
