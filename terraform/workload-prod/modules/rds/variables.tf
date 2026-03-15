@@ -7,6 +7,9 @@ variable "vpc_id" {
 variable "db_subnet_ids" { 
     type = list(string) 
 }
+variable "allowed_cidr_blocks" {  
+    type = list(string) 
+}
 variable "db_username" { 
     type = string 
 }

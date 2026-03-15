@@ -30,4 +30,5 @@ backend.tf
 .DS_Store
 
 Local.md
-
+secrets
+cloud sentinel plan

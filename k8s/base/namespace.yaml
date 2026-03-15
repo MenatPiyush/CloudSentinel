@@ -1,1 +1,12 @@
-# Namespace definitions
+---
+# governance namespace – hosts the blue/green governance-api deployments.
+# The label "mesh: governance-mesh" is required by the App Mesh controller:
+# it tells the controller to inject the Envoy sidecar into every pod in
+# this namespace and enrol them in the "governance-mesh" service mesh.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: governance
+  labels:
+    mesh: governance-mesh                      # App Mesh namespace selector
+    appmesh.k8s.aws/sidecarInjectorWebhook: enabled  # enable Envoy auto-inject

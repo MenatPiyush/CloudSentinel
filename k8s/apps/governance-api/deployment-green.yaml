@@ -1,1 +1,60 @@
-# Governance API green deployment
+---
+# Green deployment – the new/candidate version under validation.
+# Receives 10% of traffic by default (see ingress-weighted.yaml).
+# Once green is verified healthy, shift traffic to 100% green,
+# then update this deployment for the next release cycle.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: governance-api-green
+  namespace: governance
+  labels:
+    app: governance-api
+    color: green
+spec:
+  replicas: 1   # fewer replicas during canary phase; scale up once promoted
+  selector:
+    matchLabels:
+      app: governance-api
+      color: green
+  template:
+    metadata:
+      labels:
+        app: governance-api
+        color: green
+        appmesh.k8s.aws/sidecarInjectorWebhook: enabled
+      annotations:
+        appmesh.k8s.aws/mesh: governance-mesh
+        appmesh.k8s.aws/virtualNode: governance-api-green
+    spec:
+      serviceAccountName: governance-api
+      containers:
+        - name: governance-api
+          # Replace with your ECR image URI for the new release.
+          # e.g. <account>.dkr.ecr.us-east-1.amazonaws.com/cloudsentinel-governance-api:green-<sha>
+          image: public.ecr.aws/amazonlinux/amazonlinux:2023   # placeholder
+          command: ["/bin/sh", "-c", "while true; do echo 'green'; sleep 5; done"]
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          env:
+            - name: APP_COLOR
+              value: green

@@ -1,0 +1,5 @@
+# boto3 is pre-installed in the AWS Lambda Python 3.12 runtime,
+# so it does not need to be bundled.  This file is intentionally
+# minimal – add third-party packages here only if the Lambda needs them.
+#
+# boto3==1.34.*   # already provided by the runtime

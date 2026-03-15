@@ -1,1 +1,46 @@
-# App Mesh virtual router
+---
+# VirtualRouter – defines traffic-splitting rules between blue and green VirtualNodes.
+# This is the App Mesh layer of weighted routing (mirrors the ALB weighted ingress
+# but operates at the service-mesh / Envoy layer for east-west traffic).
+#
+# To shift traffic: edit the weight values and re-apply this file.
+# Blue=100 / Green=0  → full blue (stable)
+# Blue=90  / Green=10 → canary (10% to green)
+# Blue=0   / Green=100 → full green (promotion complete)
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: VirtualRouter
+metadata:
+  name: governance-router
+  namespace: governance
+spec:
+  meshRef:
+    name: governance-mesh
+  # The router listens on port 8080 for HTTP traffic from other mesh services.
+  listeners:
+    - portMapping:
+        port: 8080
+        protocol: http
+  routes:
+    - name: blue-green-split
+      httpRoute:
+        match:
+          prefix: /    # match all paths
+        action:
+          weightedTargets:
+            # 90% of mesh traffic → blue (stable)
+            - virtualNodeRef:
+                name: governance-api-blue
+              weight: 90
+            # 10% of mesh traffic → green (canary)
+            - virtualNodeRef:
+                name: governance-api-green
+              weight: 10
+        # Retry policy: retry on 5xx gateway errors up to 3 times
+        retryPolicy:
+          httpRetryEvents:
+            - gateway-error
+            - server-error
+          maxRetries: 3
+          perRetryTimeout:
+            unit: ms
+            value: 2000

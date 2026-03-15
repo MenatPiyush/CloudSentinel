@@ -1,1 +1,70 @@
-# Governance API blue deployment
+---
+# Blue deployment – the stable/current production version.
+# In a blue/green rollout, blue receives the majority of traffic (90% by default
+# via the weighted ALB ingress action) while green is being validated.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: governance-api-blue
+  namespace: governance
+  labels:
+    app: governance-api
+    color: blue
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: governance-api
+      color: blue
+  template:
+    metadata:
+      labels:
+        app: governance-api
+        color: blue
+        # App Mesh uses this label to map the pod to a VirtualNode.
+        # Must match the pod selector in virtual-nodes.yaml.
+        appmesh.k8s.aws/sidecarInjectorWebhook: enabled
+      annotations:
+        # Tell App Mesh which VirtualNode this pod belongs to.
+        # Format: mesh/<mesh-name>/virtualNode/<virtual-node-name>
+        appmesh.k8s.aws/mesh: governance-mesh
+        appmesh.k8s.aws/virtualNode: governance-api-blue
+    spec:
+      # Use the IRSA service account so pods can call AWS APIs (e.g. DynamoDB)
+      # without hardcoded credentials.
+      serviceAccountName: governance-api
+      containers:
+        - name: governance-api
+          # Replace with your ECR image URI after the first CI/CD run.
+          # e.g. <account>.dkr.ecr.us-east-1.amazonaws.com/cloudsentinel-governance-api:blue-<sha>
+          image: public.ecr.aws/amazonlinux/amazonlinux:2023   # placeholder
+          command: ["/bin/sh", "-c", "while true; do echo 'blue'; sleep 5; done"]
+          ports:
+            - containerPort: 8080
+          # Readiness/liveness probes ensure ALB only routes to healthy pods.
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          env:
+            - name: APP_COLOR
+              value: blue
+            - name: AWS_REGION
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.annotations['eks.amazonaws.com/region']
